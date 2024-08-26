@@ -1,0 +1,10 @@
+{
+  "scripts": {ggaa
+    "setup": "npm i && npm --prefix ./client i && npm --prefix ./api i",
+    "all": "concurrently \"cd client && npm run dev\" \"cd api && nodemon --exec go run main.go --signal SIGTERM\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
