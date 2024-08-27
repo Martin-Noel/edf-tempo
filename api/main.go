@@ -15,6 +15,7 @@ if err != nil{
  }
 
 http.HandleFunc("/today", controllers.GetToday)
+http.HandleFunc("/tomorrow", controllers.GetTomorrow)
 
 
 log.Fatal(http.ListenAndServe(":8019", nil))
