@@ -23,6 +23,7 @@ func GetToday(w http.ResponseWriter, r *http.Request){
 		log.Fatalf("Error reading data :  %s", err)
 	}
 
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(resData)
 
@@ -43,6 +44,7 @@ func GetToday(w http.ResponseWriter, r *http.Request){
 		log.Fatalf("Error reading data :  %s", err)
 	}
 
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(resData)
 
