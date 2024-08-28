@@ -10,6 +10,8 @@ const baseUrl = "https://www.api-couleur-tempo.fr/api"
 
 func GetToday(w http.ResponseWriter, r *http.Request){
 
+	EnableCors(&w)
+
 	url := baseUrl + "/jourTempo/today"
 
 	res,err := http.Get(url)
@@ -23,13 +25,14 @@ func GetToday(w http.ResponseWriter, r *http.Request){
 		log.Fatalf("Error reading data :  %s", err)
 	}
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(resData)
 
 	}
 
 	func GetTomorrow(w http.ResponseWriter, r *http.Request){
+
+		EnableCors(&w)
 
 	url := baseUrl + "/jourTempo/tomorrow"
 
@@ -44,17 +47,7 @@ func GetToday(w http.ResponseWriter, r *http.Request){
 		log.Fatalf("Error reading data :  %s", err)
 	}
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(resData)
 
 	}
-
-
-
-
-
-
- 
-
-

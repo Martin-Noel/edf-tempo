@@ -1,68 +1,110 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-import "./App.css";
+import { BsFillLightbulbFill, BsFillLightbulbOffFill } from "react-icons/bs";
 
 function App() {
-  const [todayDate, setTodayDate] = useState("");
-  const [todayColor, setTodayColor] = useState("");
-  const [tomorrowDate, setTomorrowDate] = useState("");
-  const [tomorrowColor, setTomorrowColor] = useState("");
+  const [today, setToday] = useState({ date: "", color: "", period: "" });
+  const [tomorrow, setTomorrow] = useState({ date: "", color: "", period: "" });
+  const [counts, setCounts] = useState(null);
 
-  const apiUrl = "http://localhost:8019";
+  const okColor = "lightgreen";
+  const noOkColor = "red";
+  const iconSize = 256;
 
-  const setStateFunctions = {
-    Today: {
-      setDate: setTodayDate,
-      setColor: setTodayColor
-    },
-    Tomorrow: {
-      setDate: setTomorrowDate,
-      setColor: setTomorrowColor
-    }
-  };
+  const apiUrl = "http://localhost:8019"; //TODO: utiliser .env
 
-  const handleResponse = (data, day) => {
-    const { setDate, setColor } = setStateFunctions[day];
+  const handleResponse = (data, setState) => {
+    let color = "";
     switch (data.codeJour) {
       case 0:
-        setColor("black");
+        color = "black";
         break;
       case 1:
-        setColor("blue");
+        color = "blue";
         break;
       case 2:
-        setColor("white");
+        color = "white";
         break;
       case 3:
-        setColor("red");
+        color = "red";
         break;
       default:
         break;
     }
-    setDate(data.dateJour);
+    setState({ date: data.dateJour, color, period: data.periode });
+  };
+
+  const handleCounts = (data) => {
+    let resultObj = {
+      pastBlueDays: 0,
+      pastWhiteDays: 0,
+      pastRedDays: 0,
+      unknowDays: 0
+    };
+
+    data.forEach((day) => {
+      if (day.periode === today.period) {
+        switch (day.codeJour) {
+          case 0:
+            resultObj.unknowDays += 1;
+            break;
+          case 1:
+            resultObj.pastBlueDays += 1;
+            break;
+          case 2:
+            resultObj.pastWhiteDays += 1;
+            break;
+          case 3:
+            resultObj.pastRedDays += 1;
+            break;
+          default:
+            break;
+        }
+      }
+      setCounts(resultObj);
+    });
   };
 
   useEffect(() => {
-    axios
-      .get(`${apiUrl}/today`)
-      .then(({ data }) => handleResponse(data, "Today"));
+    const fetchData = async () => {
+      try {
+        const todayResponse = await axios.get(`${apiUrl}/today`);
+        handleResponse(todayResponse.data, setToday);
 
-    axios
-      .get(`${apiUrl}/tomorrow`)
-      .then(({ data }) => handleResponse(data, "Tomorrow"));
+        const tomorrowResponse = await axios.get(`${apiUrl}/tomorrow`);
+        handleResponse(tomorrowResponse.data, setTomorrow);
+
+        const allResponse = await axios.get(`${apiUrl}/all`);
+        handleCounts(allResponse.data, setCounts);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
   }, []);
+
+  const renderDay = (day) => {
+    return (
+      <>
+        <div>Date: {day.date}</div>
+        <div>
+          Couleur:
+          {day.color === "red" ? (
+            <BsFillLightbulbOffFill size={iconSize} color={noOkColor} />
+          ) : (
+            <BsFillLightbulbFill size={iconSize} color={okColor} />
+          )}
+        </div>
+      </>
+    );
+  };
 
   return (
     <>
-      <div>Date du jour : {todayDate}</div>
-      <div style={{ backgroundColor: tomorrowColor }}>
-        Couleur du jour : {todayColor}
-      </div>
-      <div>Date de demain : {tomorrowDate}</div>
-      <div style={{ backgroundColor: tomorrowColor }}>
-        Couleur de demain : {tomorrowColor}
-      </div>
+      <div>Test : {counts && counts.pastBlueDays}</div>
+      <div>Aujourd'hui: {renderDay(today)}</div>
+      <div>Demain: {renderDay(tomorrow)}</div>
     </>
   );
 }

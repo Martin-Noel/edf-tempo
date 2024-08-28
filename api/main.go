@@ -14,8 +14,11 @@ if err != nil{
   log.Fatalf("Error loading .env file: %s", err)
  }
 
+
+
 http.HandleFunc("/today", controllers.GetToday)
 http.HandleFunc("/tomorrow", controllers.GetTomorrow)
+http.HandleFunc("/all", controllers.GetAllDays)
 
 
 log.Fatal(http.ListenAndServe(":8019", nil))
