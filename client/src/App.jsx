@@ -5,7 +5,16 @@ import { BsFillLightbulbFill, BsFillLightbulbOffFill } from "react-icons/bs";
 function App() {
   const [today, setToday] = useState({ date: "", color: "", period: "" });
   const [tomorrow, setTomorrow] = useState({ date: "", color: "", period: "" });
-  const [counts, setCounts] = useState(null);
+  const [counts, setCounts] = useState({
+    pastBlueDays: 0,
+    pastWhiteDays: 0,
+    pastRedDays: 0,
+    unknowDays: 0
+  });
+  const [data, setData] = useState([]);
+  const blueDaysInPeriod = 300;
+  const whiteDaysInPeriod = 43;
+  const redDaysInPeriod = 22;
 
   const okColor = "lightgreen";
   const noOkColor = "red";
@@ -17,7 +26,7 @@ function App() {
     let color = "";
     switch (data.codeJour) {
       case 0:
-        color = "black";
+        color = "grey";
         break;
       case 1:
         color = "blue";
@@ -42,27 +51,25 @@ function App() {
       unknowDays: 0
     };
 
-    data.forEach((day) => {
-      if (day.periode === today.period) {
-        switch (day.codeJour) {
-          case 0:
-            resultObj.unknowDays += 1;
-            break;
-          case 1:
-            resultObj.pastBlueDays += 1;
-            break;
-          case 2:
-            resultObj.pastWhiteDays += 1;
-            break;
-          case 3:
-            resultObj.pastRedDays += 1;
-            break;
-          default:
-            break;
-        }
+    data.map((day) => {
+      switch (day.codeJour) {
+        case 0:
+          resultObj.unknowDays += 1;
+          break;
+        case 1:
+          resultObj.pastBlueDays += 1;
+          break;
+        case 2:
+          resultObj.pastWhiteDays += 1;
+          break;
+        case 3:
+          resultObj.pastRedDays += 1;
+          break;
+        default:
+          break;
       }
-      setCounts(resultObj);
     });
+    setCounts(resultObj);
   };
 
   useEffect(() => {
@@ -75,7 +82,7 @@ function App() {
         handleResponse(tomorrowResponse.data, setTomorrow);
 
         const allResponse = await axios.get(`${apiUrl}/all`);
-        handleCounts(allResponse.data, setCounts);
+        setData(allResponse.data);
       } catch (error) {
         console.error("Error fetching data: ", error);
       }
@@ -84,17 +91,18 @@ function App() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const filteredData = data.filter((jour) => jour.periode === today.period);
+    handleCounts(filteredData);
+  }, [data, today.period]);
+
   const renderDay = (day) => {
     return (
       <>
         <div>Date: {day.date}</div>
         <div>
           Couleur:
-          {day.color === "red" ? (
-            <BsFillLightbulbOffFill size={iconSize} color={noOkColor} />
-          ) : (
-            <BsFillLightbulbFill size={iconSize} color={okColor} />
-          )}
+          <BsFillLightbulbFill size={iconSize} color={day.color} />
         </div>
       </>
     );
@@ -102,7 +110,15 @@ function App() {
 
   return (
     <>
-      <div>Test : {counts && counts.pastBlueDays}</div>
+      <div>
+        <p>Past Blue Days: {counts.pastBlueDays}</p>
+        <p>Past White Days: {counts.pastWhiteDays}</p>
+        <p>Past Red Days: {counts.pastRedDays}</p>
+        <p>Unknown Days: {counts.unknowDays}</p>
+        <p>Remaining Blue Days: {blueDaysInPeriod - counts.pastBlueDays}</p>
+        <p>Remaining White Days: {whiteDaysInPeriod - counts.pastWhiteDays}</p>
+        <p>Remaining Red Days: {redDaysInPeriod - counts.pastRedDays}</p>
+      </div>
       <div>Aujourd'hui: {renderDay(today)}</div>
       <div>Demain: {renderDay(tomorrow)}</div>
     </>
